@@ -1,9 +1,9 @@
 import streamlit as st
 
-QUALIFIED_TABLE_NAME = "NBA.PUBLIC.EYBL"
+QUALIFIED_TABLE_NAME = "NBA.PUBLIC.GAME"
 METADATA_QUERY = "SELECT VARIABLE_NAME, DEFINITION FROM NBA.PUBLIC.DEFINITIONS;"
 TABLE_DESCRIPTION = """
-This table has NBA basketball statistics since the 1979 season and also Nike EYBL Basketball data. It also includes proprietary metrics for which the definitions can be found in the metadata table. 
+This table has NBA basketball statistics from the 2022-2023 NBA season. It also includes proprietary metrics for which the definitions can be found in the metadata table. 
 """
 
 GEN_SQL = """
