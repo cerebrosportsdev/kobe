@@ -31,7 +31,7 @@ if st.session_state.messages[-1]["role"] != "assistant":
         response = ""
         resp_container = st.empty()
         for delta in openai.ChatCompletion.create(
-            model="gpt-4-1106-preview",
+            model="gpt-4",
             messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
             stream=True,
         ):
@@ -46,5 +46,4 @@ if st.session_state.messages[-1]["role"] != "assistant":
             conn = st.experimental_connection("snowpark")
             message["results"] = conn.query(sql)
             st.dataframe(message["results"])
-            CLIENT_SESSION_KEEP_ALIVE=True
         st.session_state.messages.append(message)
