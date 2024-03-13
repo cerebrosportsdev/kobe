@@ -6,7 +6,7 @@ from prompts import get_system_prompt
 st.title("KOBE Dev")
 
 # Initialize the chat messages history
-openai.api_key = st.secrets.OPENAI_API_KEY
+openai.api_key = st.secrets.OPENAI_API_KE
 if "messages" not in st.session_state:
     # system prompt includes table information, rules, and prompts the LLM to produce
     # a welcome message to the user.
