@@ -7,7 +7,7 @@ import plotly
 
 st.title("KOBE v2")
 conn = st.experimental_connection("snowpark")
-openai.api_key = st.secrets.OPENAI_API_KE
+openai.api_key = st.secrets.OPENAI_API_KEY
 if st.button("Refresh"):
     conn.reset()
 
