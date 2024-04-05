@@ -1,6 +1,6 @@
 import streamlit as st
 
-QUALIFIED_TABLE_NAME = "NBA.PUBLIC.GAME2"
+QUALIFIED_TABLE_NAME = "NBA.PUBLIC.NIKEDATA"
 METADATA_QUERY = "SELECT VARIABLE_NAME, DEFINITION FROM NBA.PUBLIC.DEFINITIONS;"
 TABLE_DESCRIPTION = """
 This table has NBA basketball statistics from the 2022-2023 NBA season. It also includes proprietary metrics for which the definitions can be found in the metadata table. 
