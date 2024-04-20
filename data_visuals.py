@@ -3,23 +3,36 @@ import openai
 import streamlit as st
 
 viz_classification_prompt = '''
-You are responsible for determining whether the following basketball data should be visualized in a BAR chart or a PIE chart.
-You will get the original question from a user who is asking a question about some data, and the data that was retrieved for that
-query. Only return your answer in JSON format. If the data cannot be visualized or it is unclear, return an empty JSON object {}.
+You are responsible for determining the appropriate visualization for the following basketball data. 
+Evaluate whether the data should be visualized at all, and if so, choose between a BAR, PIE, LINE, or SCATTER chart.
+You will receive the original question from a user and the data that was retrieved for that query. 
+Return your answer in JSON format. If the data cannot be visualized or it is unclear, return {"requires_visuals": false}.
+If visualization is required, specify the type of chart and the columns for the x and y axes:
 {
-    "type": "[BAR or PIE]"
-    "x": "[the column name for data to be displayed on the x axis]"
+    "requires_visuals": true,
+    "type": "[BAR, LINE, SCATTER]",
+    "x": "[the column name for data to be displayed on the x axis]",
     "y": "[the column name for data to be displayed on the y axis]"
 }
 '''
 
-
 def create_visuals(model_response):
     chart_data = generate_visualization(model_response, st.session_state.messages[-1]["content"])
-    if chart_data != {}:
+    if chart_data['requires_visuals'] == True:
         type = chart_data['type']
+        x_axis = chart_data['x']
+        y_axis = chart_data['y']
+
         if type == 'BAR':
             st.bar_chart(data=model_response, x=f"{chart_data['x']}", y=f"{chart_data['y']}")
+        elif type == 'LINE':
+            st.line_chart(data=model_response, x=y_axis, y=y_axis)
+        elif type == 'SCATTER':
+            # For scatter plots, ensure the data is plotted with appropriate axes.
+            st.plotly_chart({
+                'data': [{'x': model_response[x_axis], 'y': model_response[y_axis], 'type': 'scatter', 'mode': 'markers'}],
+                'layout': {'title': 'Scatter Plot', 'xaxis': {'title': x_axis}, 'yaxis': {'title': y_axis}}
+            })
 
 
 # generate a different type of visualization based on the output of the second call.
