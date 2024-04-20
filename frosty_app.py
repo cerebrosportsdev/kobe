@@ -2,8 +2,7 @@ import openai
 import re
 import streamlit as st
 from prompts import get_system_prompt
-import os
-import plotly
+from data_visuals import create_visuals
 import json
 
 viz_classification_prompt = '''
@@ -103,13 +102,11 @@ if st.session_state.login == "password":
             if sql_match:
                 sql = sql_match.group(1)
                 message["results"] = conn.query(sql)
-                st.dataframe(message["results"], )
-                # we want to use the data we retrieved with snowflake along with the original question from the user
-                chart_data = generate_visualization(message["results"], st.session_state.messages[-1]["content"])
-                if chart_data != {}:
-                    type = chart_data['type']
-                    if type == 'BAR':
-                        st.bar_chart(data=message['results'], x=f"{chart_data['x']}", y=f"{chart_data['y']}")
+                model_response = message["results"]
+                st.dataframe(model_response)
+
+                create_visuals(model_response)
+
 
             st.session_state.messages.append(message)
             conn.reset()
