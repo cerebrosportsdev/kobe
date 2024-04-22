@@ -1,47 +1,63 @@
 import json
 import openai
 import streamlit as st
+import altair as alt
 
-viz_classification_prompt = '''
-You are responsible for determining the appropriate visualization for the following basketball data. 
-Evaluate whether the data should be visualized at all, and if so, choose between a BAR, PIE, LINE, or SCATTER chart.
-You will receive the original question from a user and the data that was retrieved for that query. 
-Return your answer in JSON format. If the data cannot be visualized or it is unclear, return {"requires_visuals": false}.
-If visualization is required, specify the type of chart and the columns for the x and y axes:
-{
-    "requires_visuals": true,
-    "type": "[BAR, LINE, SCATTER]",
-    "x": "[the column name for data to be displayed on the x axis]",
-    "y": "[the column name for data to be displayed on the y axis]"
-}
-'''
+from data_visuals_prompts import data_visuals_prompt_text
 
 def create_visuals(model_response):
+    
     chart_data = generate_visualization(model_response, st.session_state.messages[-1]["content"])
-    if chart_data['requires_visuals'] == True:
-        type = chart_data['type']
+    #Looks like {'requires_visuals': True, 'type': 'BAR', 'x': 'PLAYER', 'y': '3PM'}
+
+    if chart_data.get('requires_visuals') == True:
+        type = chart_data['type'].upper()
         x_axis = chart_data['x']
         y_axis = chart_data['y']
 
         if type == 'BAR':
-            st.bar_chart(data=model_response, x=f"{chart_data['x']}", y=f"{chart_data['y']}")
+            #create the altair chart
+            altair_source_chart = (
+                alt.Chart(model_response).mark_bar().encode(
+                    x=x_axis,
+                    y=y_axis
+                )
+            )
+
+            #render source chart on streamlit
+            st.altair_chart(altair_source_chart, use_container_width=True)
+            
         elif type == 'LINE':
-            st.line_chart(data=model_response, x=y_axis, y=y_axis)
+            #create the altair chart
+            altair_source_chart = (
+                alt.Chart(model_response).mark_line().encode(
+                    x=x_axis,
+                    y=y_axis
+                )
+            )
+
+            #render source chart on streamlit
+            st.altair_chart(altair_source_chart, use_container_width=True)
         elif type == 'SCATTER':
-            # For scatter plots, ensure the data is plotted with appropriate axes.
-            st.plotly_chart({
-                'data': [{'x': model_response[x_axis], 'y': model_response[y_axis], 'type': 'scatter', 'mode': 'markers'}],
-                'layout': {'title': 'Scatter Plot', 'xaxis': {'title': x_axis}, 'yaxis': {'title': y_axis}}
-            })
+            #create the altair chart
+            altair_source_chart = (
+                alt.Chart(model_response).mark_circle().encode(
+                    x=x_axis,
+                    y=y_axis
+                )
+            )
+
+            #render source chart on streamlit
+            st.altair_chart(altair_source_chart, use_container_width=True)
 
 
 # generate a different type of visualization based on the output of the second call.
 def generate_visualization(table_data, conversation_context):
     # Format the prompt and table data correctly
     input_text = f"Question: {conversation_context}\nTable Data:\n{table_data}"
-    full_prompt = viz_classification_prompt + input_text
+    full_prompt = data_visuals_prompt_text + input_text
     
-    print("Formatted Input")
+    print("Full Prompt:")
     print(full_prompt)
 
     try:
@@ -50,15 +66,13 @@ def generate_visualization(table_data, conversation_context):
             prompt=full_prompt,
             max_tokens=150
         )
-        print("GPT-4 Response:")
-        print(response)
 
-        content = response['choices'][0]['text'].strip()
-        print("Extracted Content:")
-        print(content)
+        query_response = response['choices'][0]['text'].strip()
 
         # Parse JSON output
-        visualization_config = json.loads(content)
+        visualization_config = json.loads(query_response)
+
+        #View GPT Response for Debug
         print("Visualization Configuration:")
         print(visualization_config)
         
