@@ -2,11 +2,15 @@ import json
 import openai
 import streamlit as st
 import altair as alt
+import time
 
 from data_visuals_prompts import data_visuals_prompt_text
 
 def create_visuals(model_response):
     
+    st.markdown("generating visual...")
+    time.sleep(2)
+
     chart_data = generate_visualization(model_response, st.session_state.messages[-1]["content"])
     #Looks like {'requires_visuals': True, 'type': 'BAR', 'x': 'PLAYER', 'y': '3PM'}
 

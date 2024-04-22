@@ -14,7 +14,7 @@ For instance if the user query is
 
 If a question is pertaining to time / months / days / trends, choose a line graph.
 
-Return your answer in JSON format. If you determine that the data cannot be visualized or it is unclear, return:
+ALWAYS return your answer in JSON format only. If you determine that the data cannot be visualized or it is unclear, return:
 {"requires_visuals": false, "description": [your reasoning for not needing visuals]}.
 
 If you determine visualization is possible, please specify the type of chart and the columns for the x and y axes by returning the following:
@@ -22,6 +22,7 @@ If you determine visualization is possible, please specify the type of chart and
     "requires_visuals": true,
     "type": "[BAR, SCATTER, LINE]",
     "x": "[the column name for data to be displayed on the x axis]",
-    "y": "[the column name for data to be displayed on the y axis]"
+    "y": "[the column name for data to be displayed on the y axis]",
+    description: [Your description on the visual itself and why you chose this]
 }
 '''
