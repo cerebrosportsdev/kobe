@@ -14,17 +14,21 @@ def create_visuals(model_response):
     chart_data = generate_visualization(model_response, st.session_state.messages[-1]["content"])
     #Looks like {'requires_visuals': True, 'type': 'BAR', 'x': 'PLAYER', 'y': '3PM'}
 
+    if chart_data.get('requires_visuals') == False:
+        st.markdown("No relevant visual generated")
+        return
+
     if chart_data.get('requires_visuals') == True:
         type = chart_data['type'].upper()
         x_axis = chart_data['x']
         y_axis = chart_data['y']
 
         if type == 'BAR':
-            #create the altair chart
+
             altair_source_chart = (
                 alt.Chart(model_response).mark_bar().encode(
-                    x=x_axis,
-                    y=y_axis
+                    alt.X(x_axis),
+                    alt.Y(y_axis)
                 )
             )
 
@@ -60,9 +64,6 @@ def generate_visualization(table_data, conversation_context):
     # Format the prompt and table data correctly
     input_text = f"Question: {conversation_context}\nTable Data:\n{table_data}"
     full_prompt = data_visuals_prompt_text + input_text
-    
-    print("Full Prompt:")
-    print(full_prompt)
 
     try:
         response = openai.Completion.create(

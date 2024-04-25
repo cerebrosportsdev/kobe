@@ -1,4 +1,4 @@
-data_visuals_prompt_text = '''
+data_visuals_prompt_text = """
 You are responsible for determining the appropriate visualization for the following basketball data.  
 
 You will receive the original query from the user and the data that was retrieved for that query (the answer).
@@ -14,7 +14,9 @@ For instance if the user query is
 
 If a question is pertaining to time / months / days / trends, choose a line graph.
 
-ALWAYS return your answer in JSON format only. If you determine that the data cannot be visualized or it is unclear, return:
+ALWAYS return your answer in JSON format only. No text or description before the JSON.
+
+ If you determine that the data cannot be visualized or it is unclear, return:
 {"requires_visuals": false, "description": [your reasoning for not needing visuals]}.
 
 If you determine visualization is possible, please specify the type of chart and the columns for the x and y axes by returning the following:
@@ -25,4 +27,4 @@ If you determine visualization is possible, please specify the type of chart and
     "y": "[the column name for data to be displayed on the y axis]",
     description: [Your description on the visual itself and why you chose this]
 }
-'''
+"""
