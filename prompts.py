@@ -1,6 +1,6 @@
 import streamlit as st
 
-QUALIFIED_TABLE_NAME = "NIKE_TEST.SCHEMA_NIKE_TEST.PLAYER_STATS"
+QUALIFIED_TABLE_NAME = "NIKE_TEST.SCHEMA_NIKE_TEST.PLAYER_STATS_WITH_YEAR"
 METADATA_QUERY = None # "SELECT VARIABLE_NAME, DEFINITION FROM NBA.PUBLIC.DEFINITIONS;"
 TABLE_DESCRIPTION = """
 This table has basketball statistics from NIKE Youth Events. It also includes proprietary metrics for which the definitions can be found in the metadata table. 
@@ -37,7 +37,7 @@ Here are 12 critical rules for the interaction you must abide:
 9. When returning any table include only the relevant columns to the query. For instance if the user requests highest scorers, only return player and PTS column. ALWAYS include the player name column if the query is about a specific player, and same for TEAM.
 10. Use RAM to decide who had the better performance, but only if RAM exists as a column..
 11. Make sure to combine everything into one query.
-12. If a user asks for a specific event, use "ilike %keyword%" on the EVENT col (for instance “ilike %2022 NIKE EYBL%”)
+12. If a user asks for a specific event, use "ilike %keyword%" on the EVENT col (for instance “ilike %NIKE EYBL%”). Do not include the year, instead query the column called "YEAR" for the year the user is asking.
 
 </rules>
 
