@@ -1,7 +1,7 @@
 import openai
 import re
 import streamlit as st
-from prompts import get_system_prompt
+from prompts import get_system_prompt, WELCOME_MESSAGE_PROMPT
 from data_visuals import create_visuals
 
 st.title("Cerebro AI")
@@ -19,15 +19,16 @@ if st.session_state.login == "":
 if st.session_state.login == "password":
     # Initialize the chat messages history
     conn.reset()
-    openai.api_key = st.secrets.OPENAI_API_KEY
     if "messages" not in st.session_state:
         # system prompt includes table information, rules, and prompts the LLM to produce
         # a welcome message to the user.
-        st.session_state.messages = [{"role": "system", "content": get_system_prompt()}]
+        st.session_state.messages = [{"role": "system", "content": WELCOME_MESSAGE_PROMPT}]
 
     # Prompt for user input and save
-    if prompt := st.chat_input():
-        st.session_state.messages.append({"role": "user", "content": prompt})
+    if user_query := st.chat_input():
+        system_prompt = get_system_prompt(user_query)
+        st.session_state.messages.append({"role": "system", "content": system_prompt})
+        st.session_state.messages.append({"role": "user", "content": user_query})
 
     # display the existing chat messages
     for message in st.session_state.messages:
@@ -42,14 +43,14 @@ if st.session_state.login == "password":
     if st.session_state.messages[-1]["role"] != "assistant":
         with st.chat_message("assistant"):
             response = ""
-            resp_container = st.empty()
+            response_container = st.empty()
             for delta in openai.ChatCompletion.create(
                 model="gpt-4-1106-preview",
                 messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
                 stream=True,
             ):
                 response += delta.choices[0].delta.get("content", "")
-                resp_container.markdown(response)
+                response_container.markdown(response)
 
             message = {"role": "assistant", "content": response}
             # Parse the response for a SQL query and execute if available

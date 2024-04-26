@@ -14,7 +14,8 @@ For instance if the user query is
 
 If a question is pertaining to time / months / days / trends, choose a line graph.
 
-ALWAYS return your answer in JSON format only. No text or description before the JSON.
+ALWAYS return your answer in JSON format only. No text or description before or after the JSON.
+DO NOT FORGET, only return JSON.
 
 If you determine that the data cannot be visualized or it is unclear, return:
 {"requires_visuals": false, "description": [your reasoning for not needing visuals]}.

@@ -1,22 +1,32 @@
 import streamlit as st
+import openai
+import json
 
 QUALIFIED_TABLE_NAME = "NIKE_TEST.SCHEMA_NIKE_TEST.PLAYER_STATS_WITH_YEAR"
+
 METADATA_QUERY = None # "SELECT VARIABLE_NAME, DEFINITION FROM NBA.PUBLIC.DEFINITIONS;"
+
 TABLE_DESCRIPTION = """
-This table has basketball statistics from NIKE Youth Events. It also includes proprietary metrics for which the definitions can be found in the metadata table. 
+This table has basketball statistics.
 """
 
-GEN_SQL ="""
-
+WELCOME_MESSAGE_PROMPT = """
 Let's play a game. You are a basketball intelligence machine named Cerebro AI (AKA KOBE). Your goal is to give context around the numbers provided in the tables. .
 
 I will ask you basketball related questions that can be answered using data from the provided basketball tables, or manipulating data within the tables.
 
 Your goal is to return useful basketball information, scouting reports and evaluations.
-You will be replying to users who will be confused if you don't respond in the character of KOBE.
-You are given one table, the table name is in <tableName> tag, the columns are in <columns> tag.
+You will be replying to users who will be confused if you don't respond in the character of CerebroAI.
 
-The user will ask questions; for each question, you should respond and include a SQL query based on the question and the table. 
+Now to get started, please briefly introduce yourself as such: You are Cerebro AI, a model designed to give insightful analytics about Basketball Data.
+"""
+
+GENERATE_SQL_PROMPT ="""
+You are given one or more tables, with their Name in the <tableName> tag, the columns are in <columns> tag.
+
+The user will ask questions; for each question, you should respond and include a SQL query based on the question and the tables you have access to. 
+
+You may need to access multiple tables in a query if the question asks like a player's percentage of turnovers for a team.
 
 {context}
 
@@ -66,9 +76,21 @@ For each question from the user, make sure to include a query in your response.
 Don't forget there is no position column, use the criterion defined above in the prompt.
 
 DO NOT FORGET: if the column starts with a number, surround it with quotes when querying.
+"""
 
-Now to get started, please briefly introduce yourself as such: You are Cerebro AI, a model designed to give insightful analytics about Basketball Youth Events Data. Describe the table at a high level, and share the available metrics in 1-2 sentences.
-Then provide 3 example questions using bullet points.
+CHOOSE_TABLE_PROMPT = """
+Given the following user query about basketball statistics, decide which tables from the database should be used to answer the query. The possible tables are:
+1. Youth Event Stats: NIKE_TEST.SCHEMA_NIKE_TEST.PLAYER_STATS_WITH_YEAR
+2. NBA Box Score Stats: NBA.PUBLIC.REGULAR_SZN
+
+Please return the names of the relevant tables in a JSON formatted list based on the content of the query.
+Do not include any additional words or characters besides the brackets, quotes, and the name of the table.
+
+Query: "{query}"
+
+Example:
+If the query is about an NBA player, you should return: ["NBA.PUBLIC.REGULAR_SZN"]
+If the query is about a youth event like peach jam: ["NIKE_TEST.SCHEMA_NIKE_TEST.PLAYER_STATS_WITH_YEAR"]
 """
 
 
@@ -108,13 +130,31 @@ def get_table_context(table_name: str, table_description: str, metadata_query: s
 
     return context
 
-def get_system_prompt():
-    table_context = get_table_context(
-        table_name=QUALIFIED_TABLE_NAME,
-        table_description=TABLE_DESCRIPTION,
-        metadata_query=METADATA_QUERY
+def get_system_prompt(user_query):
+
+    get_table_response = openai.Completion.create(
+            model="gpt-3.5-turbo-instruct",
+            prompt=CHOOSE_TABLE_PROMPT.format(query=user_query),
+            max_tokens=150
     )
-    return GEN_SQL.format(context=table_context)
+
+    get_table_response_text = get_table_response['choices'][0]['text']
+    table_names = json.loads(get_table_response_text)
+    
+    table_context = []
+    for table_name in table_names:
+        table_context.append(
+            get_table_context(
+                table_name=table_name,
+                table_description=TABLE_DESCRIPTION,
+                metadata_query=METADATA_QUERY
+            )
+        )
+
+    
+    FINAL_SQL_PROMPT = GENERATE_SQL_PROMPT.format(context=table_context)
+
+    return FINAL_SQL_PROMPT
 
 # do `streamlit run prompts.py` to view the initial system prompt in a Streamlit app
 if __name__ == "__main__":

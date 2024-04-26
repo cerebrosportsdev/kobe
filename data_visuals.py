@@ -8,8 +8,8 @@ from data_visuals_prompts import data_visuals_prompt_text
 
 def create_visuals(model_response):
     
-    st.markdown("Attempting to generate visual...! *Insert Shai Dancing*")
-    time.sleep(2)
+    st.markdown("Attempting to generate visual...!")
+    time.sleep(1)
 
     chart_data = generate_visualization_from_gpt(model_response, st.session_state.messages[-1]["content"])
     #Looks like {'requires_visuals': True, 'type': 'BAR', 'x': 'PLAYER', 'y': '3PM'}
@@ -73,6 +73,7 @@ def generate_visualization_from_gpt(table_data, conversation_context):
         )
 
         query_response = response['choices'][0]['text'].strip()
+        print('Data Viz Response: ', query_response)
 
         # Parse JSON output
         visualization_config = json.loads(query_response)
