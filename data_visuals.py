@@ -8,14 +8,14 @@ from data_visuals_prompts import data_visuals_prompt_text
 
 def create_visuals(model_response):
     
-    st.markdown("generating visual...")
+    st.markdown("Attempting to generate visual...! *Insert Shai Dancing*")
     time.sleep(2)
 
-    chart_data = generate_visualization(model_response, st.session_state.messages[-1]["content"])
+    chart_data = generate_visualization_from_gpt(model_response, st.session_state.messages[-1]["content"])
     #Looks like {'requires_visuals': True, 'type': 'BAR', 'x': 'PLAYER', 'y': '3PM'}
 
     if chart_data.get('requires_visuals') == False:
-        st.markdown("No relevant visual generated")
+        st.markdown("No relevant visual generated. Try another question!")
         return
 
     if chart_data.get('requires_visuals') == True:
@@ -60,7 +60,7 @@ def create_visuals(model_response):
 
 
 # generate a different type of visualization based on the output of the second call.
-def generate_visualization(table_data, conversation_context):
+def generate_visualization_from_gpt(table_data, conversation_context):
     # Format the prompt and table data correctly
     input_text = f"Question: {conversation_context}\nTable Data:\n{table_data}"
     full_prompt = data_visuals_prompt_text + input_text
@@ -77,7 +77,7 @@ def generate_visualization(table_data, conversation_context):
         # Parse JSON output
         visualization_config = json.loads(query_response)
 
-        #View GPT Response for Debug
+        #View GPT Response for Debugging Purposes
         print("Visualization Configuration:")
         print(visualization_config)
         

@@ -4,7 +4,7 @@ import streamlit as st
 from prompts import get_system_prompt
 from data_visuals import create_visuals
 
-st.title("KOBE v2")
+st.title("Cerebro AI")
 conn = st.experimental_connection("snowpark")
 openai.api_key = st.secrets.OPENAI_API_KEY
 if st.button("Refresh"):

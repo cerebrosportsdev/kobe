@@ -16,7 +16,7 @@ If a question is pertaining to time / months / days / trends, choose a line grap
 
 ALWAYS return your answer in JSON format only. No text or description before the JSON.
 
- If you determine that the data cannot be visualized or it is unclear, return:
+If you determine that the data cannot be visualized or it is unclear, return:
 {"requires_visuals": false, "description": [your reasoning for not needing visuals]}.
 
 If you determine visualization is possible, please specify the type of chart and the columns for the x and y axes by returning the following:
