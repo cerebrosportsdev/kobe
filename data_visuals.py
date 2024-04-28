@@ -1,5 +1,6 @@
 import json
 import openai
+import re
 import streamlit as st
 import altair as alt
 import time
@@ -8,14 +9,15 @@ from data_visuals_prompts import data_visuals_prompt_text
 
 def create_visuals(model_response):
     
-    st.markdown("Attempting to generate visual...!")
     time.sleep(1)
 
+
+    print("convers contxt: ", st.session_state.messages[-1]["content"])
     chart_data = generate_visualization_from_gpt(model_response, st.session_state.messages[-1]["content"])
     #Looks like {'requires_visuals': True, 'type': 'BAR', 'x': 'PLAYER', 'y': '3PM'}
 
     if chart_data.get('requires_visuals') == False:
-        st.markdown("No relevant visual generated. Try another question!")
+        st.text("No relevant visual generated. Ask me another question!")
         return
 
     if chart_data.get('requires_visuals') == True:
@@ -74,15 +76,19 @@ def generate_visualization_from_gpt(table_data, conversation_context):
 
         query_response = response['choices'][0]['text'].strip()
         print('Data Viz Response: ', query_response)
-
-        # Parse JSON output
-        visualization_config = json.loads(query_response)
-
-        #View GPT Response for Debugging Purposes
-        print("Visualization Configuration:")
-        print(visualization_config)
         
-        return visualization_config
+        # Parse JSON output
+        json_match = re.search(r'\{.*?\}', query_response, re.DOTALL)
+        
+        if json_match:
+            visualization_config = json.loads(json_match.group(0))
+
+            print("Visualization Configuration:")
+            print(visualization_config)
+            return visualization_config
+        else:
+            print("No JSON found in response.")
+            return {}
 
     except Exception as e:
         print(f"An error occurred: {e}")

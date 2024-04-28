@@ -3,26 +3,41 @@ import re
 import streamlit as st
 from prompts import get_system_prompt, WELCOME_MESSAGE_PROMPT
 from data_visuals import create_visuals
+from functions import generate_responses
 
-st.title("Cerebro AI")
-conn = st.experimental_connection("snowpark")
+LOGIN_PASSWORD = "CerebroAI"
 openai.api_key = st.secrets.OPENAI_API_KEY
-if st.button("Refresh"):
-    conn.reset()
+password_placeholder = "Please Enter The Password"
 
+conn = st.experimental_connection("snowpark")
+
+st.title("🔍 CerebroAI")
+st.caption("Chat with the largest basketball dataset ... ever.")
+
+# Initialize session state for login
 if "login" not in st.session_state:
     st.session_state.login = ""
-password = ""
-if st.session_state.login == "":
-    st.session_state.login = st.text_input("Enter Password", type = 'password')
 
-if st.session_state.login == "password":
+if st.session_state.login != LOGIN_PASSWORD:
+    login_attempt_input = st.text_input("Enter Password", type = 'password', placeholder=password_placeholder)
+    if login_attempt_input == LOGIN_PASSWORD:
+        st.session_state.login = login_attempt_input
+        st.experimental_rerun()
+    else:
+        if login_attempt_input: # Unsuccessful Login
+            st.error("Incorrect Password. Please Try Again")
+            st.caption("*Hint: You Get No Hints*")
+else: # Following LOGIN_SUCCESS
+
+    # Refresh Button
+    if st.button("Refresh"):
+        conn.reset()
+        st.session_state.clear()
+
     # Initialize the chat messages history
     conn.reset()
     if "messages" not in st.session_state:
-        # system prompt includes table information, rules, and prompts the LLM to produce
-        # a welcome message to the user.
-        st.session_state.messages = [{"role": "system", "content": WELCOME_MESSAGE_PROMPT}]
+        st.session_state.messages = [{"role": "system", "content": WELCOME_MESSAGE_PROMPT, "key": "welcome-message"}]
 
     # Prompt for user input and save
     if user_query := st.chat_input():
@@ -42,28 +57,46 @@ if st.session_state.login == "password":
     # If last message is not from assistant, we need to generate a new response
     if st.session_state.messages[-1]["role"] != "assistant":
         with st.chat_message("assistant"):
-            response = ""
-            response_container = st.empty()
-            for delta in openai.ChatCompletion.create(
-                model="gpt-4-1106-preview",
-                messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
-                stream=True,
-            ):
-                response += delta.choices[0].delta.get("content", "")
-                response_container.markdown(response)
+            
+            # Placeholder for loading ...
+            text_placeholder = st.empty()
+            text_placeholder.caption("Assistant is typing...")
+            gif_placeholder = st.empty()
+            gif_placeholder.image("shaiDance.gif", width=250)
 
-            message = {"role": "assistant", "content": response}
-            # Parse the response for a SQL query and execute if available
-            sql_match = re.search(r"```sql\n(.*)\n```", response, re.DOTALL)
-            if sql_match:
-                sql = sql_match.group(1)
-                message["results"] = conn.query(sql)
-                model_response = message["results"]
-                st.dataframe(model_response)
+            # Generate and Classify Model Responses
+            responses = generate_responses(st.session_state.messages)
 
-                create_visuals(model_response)
+            # Clear Loading placeholders
+            text_placeholder.empty()  # Clears the text
+            gif_placeholder.empty()  # Clears the GIF
+            
+            for response_object in responses:
+                response_type = response_object["type"]
+                response_content = response_object["content"]
 
+                if response_type == "welcome_message":
+                    st.markdown(response_content)
+                
+                elif response_type == "sql_response":
+                    
+                    # Showing the Query Gen Response: strictly for debugging the query itself
+                    # st.markdown(response_content)
+                    
+                    message = {"role": "assistant", "content": response_content}
+                    
+                    sql_match = re.search(r"```sql\n(.*)\n```", response_content, re.DOTALL)
+                    if sql_match:
+                        sql = sql_match.group(1)
+                        table_response = conn.query(sql)
 
-            st.session_state.messages.append(message)
-            conn.reset()
-            session = st.experimental_connection("snowpark").session
+                        message["results"] = table_response
+                        message["key"] = response_type
+
+                        st.caption("Here's whats I think you were looking for:")
+                        st.dataframe(table_response)
+
+                        create_visuals(table_response)
+                    st.session_state.messages.append(message)
+                    conn.reset()
+                    session = st.experimental_connection("snowpark").session
