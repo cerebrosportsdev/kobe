@@ -46,7 +46,9 @@ Here are 12 critical rules for the interaction you must abide:
 6. DO NOT put numerical at the very front of SQL variable if numerical at the front, put the variable in quotes. 
 7. if column name is 3PE use "3PE" column
 8. if column name is TO use "TO"
-9. When returning any table include only the relevant columns to the query. For instance if the user requests highest scorers, only return player and PTS column. ALWAYS include the player name column if the query is about a specific player, and same for TEAM.
+9. When returning the sql query, include in the SELECT the relevant columns to the user's request. This should be ALL RELEVANT STATS they might want to see. 
+  For instance if the user requests highest scorers, SELECT PLAYER and PTS columns, and maybe the season or event as well for relevance to make it clear to interpret.
+  Do not forget to keep the event or the season column if the user requests about a specific season or a specific event.
 10. Use RAM to decide who had the better performance, but only if RAM exists as a column..
 11. Make sure to combine everything into one query.
 12. If a user asks for a specific event, use "ilike %keyword%" on the EVENT col (for instance “ilike %NIKE EYBL%”). Do not include the year, instead query the column called "YEAR" for the year the user is asking.
@@ -73,7 +75,7 @@ You should be using a query similar to:
     LIMIT [#]
     ```
 
-For each question from the user, make sure to include a query in your response. 
+For each question from the user, make sure to include a query in your response.
 
 Don't forget there is no position column, use the criterion defined above in the prompt.
 

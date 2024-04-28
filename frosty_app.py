@@ -4,6 +4,7 @@ import streamlit as st
 from prompts import get_system_prompt, WELCOME_MESSAGE_PROMPT
 from data_visuals import create_visuals
 from functions import generate_responses
+from st_aggrid import AgGrid
 
 LOGIN_PASSWORD = "CerebroAI"
 openai.api_key = st.secrets.OPENAI_API_KEY
@@ -26,7 +27,7 @@ if st.session_state.login != LOGIN_PASSWORD:
     else:
         if login_attempt_input: # Unsuccessful Login
             st.error("Incorrect Password. Please Try Again")
-            st.caption("*Hint: You Get No Hints*")
+            st.caption("*Hint: You get no hints*")
 else: # Following LOGIN_SUCCESS
 
     # Refresh Button
@@ -52,7 +53,8 @@ else: # Following LOGIN_SUCCESS
         with st.chat_message(message["role"]):
             st.write(message["content"])
             if "results" in message:
-                st.dataframe(message["results"])
+                AgGrid(message["results"])
+                # st.dataframe(message["results"])
 
     # If last message is not from assistant, we need to generate a new response
     if st.session_state.messages[-1]["role"] != "assistant":
@@ -60,7 +62,7 @@ else: # Following LOGIN_SUCCESS
             
             # Placeholder for loading ...
             text_placeholder = st.empty()
-            text_placeholder.caption("Assistant is typing...")
+            text_placeholder.caption("CerberoAI is cooking, one sec...")
             gif_placeholder = st.empty()
             gif_placeholder.image("shaiDance.gif", width=250)
 
@@ -95,6 +97,7 @@ else: # Following LOGIN_SUCCESS
 
                         st.caption("Here's whats I think you were looking for:")
                         st.dataframe(table_response)
+                        # AgGrid(table_response)
 
                         create_visuals(table_response)
                     st.session_state.messages.append(message)

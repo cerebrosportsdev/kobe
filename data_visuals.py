@@ -82,9 +82,6 @@ def generate_visualization_from_gpt(table_data, conversation_context):
         
         if json_match:
             visualization_config = json.loads(json_match.group(0))
-
-            print("Visualization Configuration:")
-            print(visualization_config)
             return visualization_config
         else:
             print("No JSON found in response.")
