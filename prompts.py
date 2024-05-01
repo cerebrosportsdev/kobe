@@ -30,7 +30,7 @@ Right now, I can answer questions about Nike Youth Tournaments. \n
 
 If you're here for deep insights about hoops, try a few queries. Here are some examples of what you can ask me: \n\n
 
-1. How many threes did Cooper Flagg make throughout all his 16U tournaments?, \n
+1. How many threes did Cooper Flagg make throughout all his 16U tournaments?\n
 2. Who averaged the most steals in the 2023 Nike EYBL Tournament\n
 3. How did Bronny play in the Peach Jam in 2022?\n
 """
