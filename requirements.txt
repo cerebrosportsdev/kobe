@@ -1,6 +1,6 @@
 aiohttp 
 aiosignal
-altair
+altair=5.3.0
 asn1crypto 
 async-timeout 
 attrs==23.1.0
